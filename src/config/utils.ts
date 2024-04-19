@@ -18,7 +18,9 @@ export const setQueryLog = (e: Prisma.QueryEvent) => {
     .replaceAll(`${process.env.DATABASE_NAME}.`, ''); // 데이터베이스 정보 생략
   params.forEach((param) => (query = query.replace('?', skyblue(param))));
 
+  console.log(skyblue(' ➤ SYSTEM CALL '));
   console.log(`${yellow('Query')}: ${query}`);
   console.log(`${yellow('Params')}: ${e.params}`);
   console.log(`${yellow('Duration')}: ${e.duration}ms`);
+  console.log(skyblue(' ➤ DONE! '));
 };
