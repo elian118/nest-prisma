@@ -3,7 +3,6 @@ import { Post, Prisma, PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PostService {
-  // constructor(private prisma: PrismaService) {}
   constructor(private prisma: PrismaClient) {}
 
   async post(

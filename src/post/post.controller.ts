@@ -7,30 +7,25 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { UserService } from './user/user.service';
-import { PostService } from './post/post.service';
-import { Post as PostModel, User } from '@prisma/client';
-import { PostDto } from './post/dto/post-dto';
-import { UserDto } from './user/dto/user-dto';
+import { PostService } from './post.service';
+import { Post as PostModel } from '.prisma/client';
+import { PostDto } from './dto/post-dto';
 
-@Controller()
-export class AppController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly postService: PostService,
-  ) {}
+@Controller('post')
+export class PostController {
+  constructor(private readonly postService: PostService) {}
 
-  @Get('post/:id')
-  async getPostById(@Param('id') id: string): Promise<PostModel> {
-    return this.postService.post({ id: Number(id) });
-  }
-
-  @Get('feed')
+  @Get()
   async getPublishedPosts(): Promise<PostModel[]> {
     return this.postService.posts({ where: { published: true } });
   }
 
-  @Get('filtered-posts/:searchString')
+  @Get('/:id')
+  async getPostById(@Param('id') id: string): Promise<PostModel> {
+    return this.postService.post({ id: Number(id) });
+  }
+
+  @Get('/filtered-posts/:searchString')
   async getFilteredPosts(
     @Param('searchString') searchString: string,
   ): Promise<PostModel[]> {
@@ -44,7 +39,7 @@ export class AppController {
     });
   }
 
-  @Post('post')
+  @Post()
   async createDraft(@Body() postData: PostDto): Promise<PostModel> {
     const { title, content, authorEmail } = postData;
     return this.postService.createPost({
@@ -56,12 +51,7 @@ export class AppController {
     });
   }
 
-  @Post('user')
-  async signupUser(@Body() userData: UserDto): Promise<User> {
-    return this.userService.createUser(userData);
-  }
-
-  @Put('publish/:id')
+  @Put('/publish/:id')
   async publishPost(@Param('id') id: string): Promise<PostModel> {
     return this.postService.updatePost({
       where: { id: Number(id) },
@@ -69,7 +59,7 @@ export class AppController {
     });
   }
 
-  @Delete('post/:id')
+  @Delete('/:id')
   async deletePost(@Param('id') id: string): Promise<PostModel> {
     return this.postService.deletePost({ id: Number(id) });
   }
