@@ -17,11 +17,11 @@ export function logger(req: Request, res: Response, next: NextFunction) {
     const resTime = end - start;
 
     const coloredStatusCode =
-      res.statusCode >= 200 && res.statusCode < 400
-        ? yellow(res.statusCode)
+      res.statusCode >= 200 && res.statusCode < 300
+        ? blue(res.statusCode)
         : res.statusCode >= 400 && res.statusCode < 600
           ? red(res.statusCode)
-          : blue(res.statusCode);
+          : yellow(res.statusCode);
 
     console.log(
       `${coloredMethod} ${originalUrl} ➤ ${coloredStatusCode} - Duration: ${resTime}ms`,
