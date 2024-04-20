@@ -15,13 +15,14 @@ export function logger(req: Request, res: Response, next: NextFunction) {
   res.on('finish', () => {
     const end = Date.now();
     const resTime = end - start;
+    const statusMsg = `${res.statusCode} ${res.statusMessage}`;
 
     const coloredStatusCode =
       res.statusCode >= 200 && res.statusCode < 300
-        ? blue(res.statusCode)
+        ? blue(statusMsg)
         : res.statusCode >= 400 && res.statusCode < 600
-          ? red(res.statusCode)
-          : yellow(res.statusCode);
+          ? red(statusMsg)
+          : yellow(statusMsg);
 
     console.log(
       `${coloredMethod} ${originalUrl} ➤ ${coloredStatusCode} - Duration: ${resTime}ms`,

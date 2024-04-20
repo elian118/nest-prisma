@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, PrismaClient, User } from '@prisma/client';
 
 @Injectable()
@@ -45,5 +45,20 @@ export class UserService {
 
   async deleteUser(where: Prisma.UserWhereUniqueInput) {
     return this.prisma.user.delete({ where });
+  }
+
+  async verifyEmail(signupVerifyToken: string): Promise<string> {
+    const user = ''; //await this.prisma.user({where: {}});
+    if (!user) {
+      throw new NotFoundException('존재하지 않는 사용자입니다.');
+    }
+    return '';
+  }
+
+  async getUserInfo(email: string) {
+    return this.prisma.user.findUnique({
+      where: { email },
+      select: { id: true, name: true, email: true, password: true },
+    });
   }
 }
