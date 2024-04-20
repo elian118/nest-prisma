@@ -11,7 +11,6 @@ import { SignInDto } from './sign-in-dto';
 import { AuthEnums } from './auth.enums';
 import { Payload, User } from './interfaces';
 import { RefreshTokenDto } from './dto/refresh-token-dto';
-import * as process from 'process';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()

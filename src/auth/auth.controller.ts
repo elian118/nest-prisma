@@ -100,7 +100,7 @@ export class AuthController {
   @Get('authenticate')
   @UseGuards(JwtAccessAuthGuard)
   async user(@Req() req: any, @Res() res: Response): Promise<any> {
-    const userId: number = req.user.id;
+    const userId: number = Number(req.user.id);
     console.log('userId', userId);
     const verifiedUser = await this.userService.findUserById(userId);
     return res.send(verifiedUser);
