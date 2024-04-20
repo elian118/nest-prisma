@@ -31,7 +31,10 @@
 
 2. JWT 적용<br/><br/>
 
-    [Nest.JS 공식 매뉴얼](https://docs.nestjs.com/security/authentication)<br/><br/>
+    [Nest.JS 공식 매뉴얼 - JWT](https://docs.nestjs.com/security/authentication)<br/>
+    [Nest.JS 공식 매뉴얼 - passport](https://docs.nestjs.com/recipes/passport)<br/>
+    [How to implement Refresh-Token using JWT?](https://velog.io/@from_numpy/NestJS-How-to-implement-Refresh-Token-with-JWT)<br/>
+    [secretOrPrivateKey must have a value](https://velog.io/@daep93/Nestjs-secretOrPrivateKey-must-have-a-value)<br/><br/>
 
 3. 참고도서<br/><br/>
 
