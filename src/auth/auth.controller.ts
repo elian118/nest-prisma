@@ -50,7 +50,7 @@ export class AuthController {
 
   @ApiOperation({ summary: '토큰 갱신' })
   @ApiBearerAuth('access_token')
-  @UseGuards(JwtAccessAuthGuard)
+  @UseGuards(JwtAccessAuthGuard) // Todo: 리프레시 토큰 검증 가드로 변경
   @Post('refresh')
   async refresh(
     @Body() refreshTokenDto: RefreshTokenDto,
