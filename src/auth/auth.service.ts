@@ -12,6 +12,7 @@ import { AuthEnums } from './auth.enums';
 import { Payload, User } from './interfaces';
 import { RefreshTokenDto } from './dto/refresh-token-dto';
 import { ConfigService } from '@nestjs/config';
+import { jwtConstants } from './constants';
 
 @Injectable()
 export class AuthService {
@@ -93,7 +94,7 @@ export class AuthService {
     const { refresh_token } = refreshTokenDto;
 
     const decodedRefreshToken = this.jwtService.verify(refresh_token, {
-      secret: process.env.JWT_REFRESH_SECRET,
+      secret: jwtConstants.jwtRefSecret,
     }) as Payload;
 
     const userId = decodedRefreshToken.id;

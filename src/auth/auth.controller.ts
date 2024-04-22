@@ -5,20 +5,13 @@ import {
   Param,
   Post,
   Req,
-  Request,
   Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import {
-  ApiBearerAuth,
-  ApiExcludeEndpoint,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SignInDto } from './sign-in-dto';
-import { JwtAuthGuard } from './jwt/jwt-auth.guard';
 import { UserService } from '../user/user.service';
 import { Response } from 'express';
 import { JwtAccessAuthGuard } from './jwt/jwt-access.guard';
@@ -46,18 +39,21 @@ export class AuthController {
 
     await this.userService.setCurrentRefreshToken(refreshToken, user.id);
 
+    // 아래 명령은 프론트에서 자체 처리
     res.setHeader('Authorization', 'Bearer ' + [accessToken, refreshToken]);
-    res.cookie('access_token', accessToken, { httpOnly: true });
-    res.cookie('refresh_token', refreshToken, { httpOnly: true });
+    // res.cookie('access_token', accessToken, { httpOnly: true });
+    // res.cookie('refresh_token', refreshToken, { httpOnly: true });
 
     return {
+      tokens: [accessToken, refreshToken].toString(), // 토큰 샘플
       message: 'login success',
       access_token: accessToken,
       refresh_token: refreshToken,
     };
   }
 
-  @ApiOperation({ summary: '리프레시 토큰' })
+  @ApiOperation({ summary: '리프레시 토큰 - 접근 토큰 갱신' })
+  @ApiBearerAuth('tokens')
   @Post('refresh')
   async refresh(
     @Body() refreshTokenDto: RefreshTokenDto,
@@ -66,51 +62,46 @@ export class AuthController {
     try {
       const newAccessToken = (await this.authService.refresh(refreshTokenDto))
         .accessToken;
-      res.setHeader('Authorization', `Bearer ${newAccessToken}`);
-      res.cookie('access_token', newAccessToken, {
-        httpOnly: true,
-      });
+      // 아래 명령은 프론트에서 자체 처리
+      // res.setHeader('Authorization', `Bearer ${newAccessToken}`);
+      // res.cookie('access_token', newAccessToken, { httpOnly: true });
+
       res.send({ newAccessToken });
     } catch (err) {
       throw new UnauthorizedException(AuthEnums.NotExist);
     }
   }
 
-  // 스웨거에서 실행 불가 => 포스트맨에서 쿠키 섹션을 추가해 테스트 가능
-  @ApiExcludeEndpoint()
-  @ApiOperation({ summary: '로그아웃' })
-  @Post('logout')
-  @UseGuards(JwtRefreshGuard)
-  async logout(@Req() req: any, @Res() res: Response): Promise<any> {
-    await this.userService.removeRefreshToken(req.user.id);
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
-    return res.send({ message: 'logout success' });
-  }
+  // @ApiExcludeEndpoint()
 
-  @ApiExcludeEndpoint()
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  getProfile(@Request() req: any) {
-    return req.user;
-  }
-
-  @ApiExcludeEndpoint()
   @ApiOperation({ summary: '인증' })
-  @Get('authenticate')
+  @ApiBearerAuth('tokens')
   @UseGuards(JwtAccessAuthGuard)
+  @Get('authenticate')
   async user(@Req() req: any, @Res() res: Response): Promise<any> {
     const userId: number = Number(req.user.id);
     console.log('userId', userId);
     const verifiedUser = await this.userService.findUserById(userId);
     return res.send(verifiedUser);
   }
-
   @ApiOperation({ summary: '사용자 정보 조회' })
   @ApiBearerAuth('tokens')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAccessAuthGuard)
   @Get('profile/:id')
   async getProfileById(@Param('id') id: string) {
     return await this.authService.getProfile(Number(id));
+  }
+
+  @ApiOperation({ summary: '로그아웃' })
+  @ApiBearerAuth('tokens')
+  @UseGuards(JwtRefreshGuard)
+  @Post('logout')
+  async logout(@Req() req: any, @Res() res: Response): Promise<any> {
+    await this.userService.removeRefreshToken(req.user.id);
+    // 아래 명령은 프론트에서 자체 처리
+    // res.clearCookie('access_token');
+    // res.clearCookie('refresh_token');
+
+    return res.send({ message: 'logout success' });
   }
 }
