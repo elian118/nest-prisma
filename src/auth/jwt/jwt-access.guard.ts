@@ -7,9 +7,7 @@ export class JwtAccessAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<any> {
     try {
       const request = context.switchToHttp().getRequest();
-      const user = await this.validateToken(request);
-      console.log('user');
-      console.log(user);
+      const user = await this.validateToken(request); // JWT 검증 및 파싱
       request.user = user;
       return user;
     } catch (err) {
@@ -18,11 +16,7 @@ export class JwtAccessAuthGuard implements CanActivate {
   }
 
   private async validateToken(req: any) {
-    const tokens = req.headers.authorization.split(`Bearer `)[1];
-    const accToken = tokens.split(',')[0];
-    const refToken = tokens.split(',')[1];
-    console.log(`accToken: ${accToken}`);
-    console.log(`refToken: ${refToken}`);
+    const accToken = req.get('Authorization').replace('Bearer', '').trim();
     return await this.jwtService.verify(accToken);
   }
 }

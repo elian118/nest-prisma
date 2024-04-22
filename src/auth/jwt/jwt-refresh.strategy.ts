@@ -6,6 +6,7 @@ import { Request } from 'express';
 import { Payload, User } from '../interfaces';
 import { jwtConstants } from '../constants';
 
+// passport 예시 - 사용 안 함
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(
   Strategy,
@@ -13,21 +14,16 @@ export class JwtRefreshStrategy extends PassportStrategy(
 ) {
   constructor(private readonly userService: UserService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req) => req?.cookies?.refresh_token,
+      ]),
       secretOrKey: jwtConstants.jwtRefSecret,
-      passReqToCallback: true, // validate 첫번째 인자로 req 객체 전달 허용
+      passReqToCallback: true,
     });
   }
 
   async validate(req: Request, payload: Payload) {
-    console.log(payload);
-    console.log('call validate');
-    const tokens = req.get('Authorization').replace('Bearer', '').trim();
-    const accessToken = tokens.split(',')[0];
-    const refreshToken = tokens.split(',')[1];
-    console.log(`accToken: ${accessToken}`);
-    console.log(`refToken: ${refreshToken}`);
+    const refreshToken = req.cookies['refresh_token'];
     const user: User = await this.userService.getUserIfRefreshTokenMatches(
       refreshToken,
       payload.id,

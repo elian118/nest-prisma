@@ -17,7 +17,6 @@ import { Response } from 'express';
 import { JwtAccessAuthGuard } from './jwt/jwt-access.guard';
 import { RefreshTokenDto } from './dto/refresh-token-dto';
 import { AuthEnums } from './auth.enums';
-import { JwtRefreshGuard } from './jwt/jwt-refresh.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -39,21 +38,19 @@ export class AuthController {
 
     await this.userService.setCurrentRefreshToken(refreshToken, user.id);
 
-    // 아래 명령은 프론트에서 자체 처리
+    // 아래 해더 설정 코드는 프론트에서 토큰을 상태로 관리할 경우, 불필요
     res.setHeader('Authorization', 'Bearer ' + [accessToken, refreshToken]);
-    // res.cookie('access_token', accessToken, { httpOnly: true });
-    // res.cookie('refresh_token', refreshToken, { httpOnly: true });
 
     return {
-      tokens: [accessToken, refreshToken].toString(), // 토큰 샘플
       message: 'login success',
       access_token: accessToken,
       refresh_token: refreshToken,
     };
   }
 
-  @ApiOperation({ summary: '리프레시 토큰 - 접근 토큰 갱신' })
-  @ApiBearerAuth('tokens')
+  @ApiOperation({ summary: '토큰 갱신' })
+  @ApiBearerAuth('access_token')
+  @UseGuards(JwtAccessAuthGuard)
   @Post('refresh')
   async refresh(
     @Body() refreshTokenDto: RefreshTokenDto,
@@ -61,10 +58,7 @@ export class AuthController {
   ) {
     try {
       const newAccessToken = (await this.authService.refresh(refreshTokenDto))
-        .accessToken;
-      // 아래 명령은 프론트에서 자체 처리
-      // res.setHeader('Authorization', `Bearer ${newAccessToken}`);
-      // res.cookie('access_token', newAccessToken, { httpOnly: true });
+        .newAccessToken;
 
       res.send({ newAccessToken });
     } catch (err) {
@@ -72,20 +66,17 @@ export class AuthController {
     }
   }
 
-  // @ApiExcludeEndpoint()
-
   @ApiOperation({ summary: '인증' })
-  @ApiBearerAuth('tokens')
+  @ApiBearerAuth('access_token')
   @UseGuards(JwtAccessAuthGuard)
   @Get('authenticate')
   async user(@Req() req: any, @Res() res: Response): Promise<any> {
     const userId: number = Number(req.user.id);
-    console.log('userId', userId);
     const verifiedUser = await this.userService.findUserById(userId);
     return res.send(verifiedUser);
   }
   @ApiOperation({ summary: '사용자 정보 조회' })
-  @ApiBearerAuth('tokens')
+  @ApiBearerAuth('access_token')
   @UseGuards(JwtAccessAuthGuard)
   @Get('profile/:id')
   async getProfileById(@Param('id') id: string) {
@@ -93,14 +84,11 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: '로그아웃' })
-  @ApiBearerAuth('tokens')
-  @UseGuards(JwtRefreshGuard)
+  @ApiBearerAuth('access_token')
+  @UseGuards(JwtAccessAuthGuard)
   @Post('logout')
   async logout(@Req() req: any, @Res() res: Response): Promise<any> {
     await this.userService.removeRefreshToken(req.user.id);
-    // 아래 명령은 프론트에서 자체 처리
-    // res.clearCookie('access_token');
-    // res.clearCookie('refresh_token');
 
     return res.send({ message: 'logout success' });
   }

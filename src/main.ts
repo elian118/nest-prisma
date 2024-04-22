@@ -22,7 +22,7 @@ async function bootstrap() {
         description: 'JWT를 입력하세요.',
         in: 'header',
       },
-      'tokens',
+      'access_token',
     )
     .build();
 

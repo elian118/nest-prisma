@@ -90,7 +90,7 @@ export class AuthService {
 
   async refresh(
     refreshTokenDto: RefreshTokenDto,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<{ newAccessToken: string }> {
     const { refresh_token } = refreshTokenDto;
 
     const decodedRefreshToken = this.jwtService.verify(refresh_token, {
@@ -106,8 +106,12 @@ export class AuthService {
       throw new UnauthorizedException(AuthEnums.NotExist);
     }
 
-    const accessToken = await this.genAccToken(user);
+    const newAccessToken = await this.genAccToken(user);
+    const newRefreshToken = await this.getRefreshToken(user);
 
-    return { accessToken };
+    // 리프레시 토큰 갱신 - 만료시간 연장
+    await this.userService.setCurrentRefreshToken(newRefreshToken, userId);
+
+    return { newAccessToken };
   }
 }
